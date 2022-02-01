@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import PropTypes from "prop-types";
 import userService from "../services/user.service";
 import { toast } from "react-toastify";
 const UserContext = React.createContext();
 
 export const useUser = () => {
-    return UserContext(UserContext);
+    return useContext(UserContext);
 };
 
 const UserProvider = ({ children }) => {
