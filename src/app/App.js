@@ -8,13 +8,11 @@ import NavBar from "./components/ui/navBar";
 import { ProfessionProvider } from "./hooks/useProfession";
 import { QualitiesProvider } from "./hooks/useQualities";
 import AuthProvider from "./hooks/useAuth";
-import LogInProvider from "./hooks/useLogIn";
 
 function App() {
     return (
         <div>
             <AuthProvider>
-                <LogInProvider>
             <NavBar />
                 <QualitiesProvider>
                     <ProfessionProvider>
@@ -26,7 +24,6 @@ function App() {
                         </Switch>
                     </ProfessionProvider>
                 </QualitiesProvider>
-                </LogInProvider>
                 </AuthProvider>
             <ToastContainer />
         </div>
