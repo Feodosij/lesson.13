@@ -13,84 +13,69 @@ import { useAuth } from "../../../hooks/useAuth";
 
 const EditUserPage = () => {
     const { userId } = useParams();
+    const { currentUser, updateUserData } = useAuth();
     const history = useHistory();
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const { getUserById } = useUser();
     const user = getUserById(userId);
-    const { editUser } = useAuth();
-    const [data, setData] = useState({
-        email: "",
-        password: "",
-        profession: "",
-        sex: "male",
-        qualities: []
-    });
+    const [data, setData] = useState();
 
-    const {
-        qualities,
-        getQuality,
-        isLoading: isQualitiesLoading
-    } = useQualities();
+    const { qualities, isLoading: qualitiesLoading } = useQualities();
+    const { professions, isLoading: professionsLoading } = useProfessions();
     const qualitiesList = qualities.map((q) => ({
         label: q.name,
         value: q._id
     }));
-    const { isLoading: isProfessionsLoading, professions } = useProfessions();
+
     const professionsList = professions.map((p) => ({
         label: p.name,
         value: p._id
     }));
 
-    // const getProfessionById = (id) => {
-    //     for (const prof in professions) {
-    //         const profData = professions[prof];
-    //         if (profData._id === id) return profData;
-    //     }
-    // };
-    // const getQualities = (elements) => {
-    //     const qualitiesQrray = [];
-    //     for (const elem of elements) {
-    //         for (const qualy in qualities) {
-    //             if (elem.value === qualities[qualy]._id) {
-    //                 qualitiesQrray.push(qualities[qualy]);
-    //             }
-    //         }
-    //     }
-    //     return qualitiesQrray;
-    // };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         const isValid = validate();
         if (!isValid) return;
-        const newData = {
+        await updateUserData({
             ...data,
             qualities: data.qualities.map((q) => q.value)
-        };
-        try {
-            await editUser(newData);
-            history.push(`/users/${userId}`);
-        } catch (error) {
-            setErrors(error);
-        }
-    };
-
-    const transformData = (data) => {
-        return data.map((qual) => {
-            const quality = getQuality(qual);
-            return { label: quality.name, value: quality._id };
         });
+        history.push(`/users/${currentUser._id}`);
+    };
+    function getQualitiesListByIds(qualitiesIds) {
+        const qualitiesArray = [];
+
+        for (const qualId of qualitiesIds) {
+            for (const quality of qualities) {
+                if (quality._id === qualId) {
+                    qualitiesArray.push(quality);
+                    break;
+                }
+            }
+        }
+        return qualitiesArray;
+    }
+    const transformData = (data) => {
+        return getQualitiesListByIds(data).map((qual) => ({
+            label: qual.name,
+            value: qual._id
+        }));
     };
 
     useEffect(() => {
-        if (!isQualitiesLoading && !isProfessionsLoading) {
-            setData({ ...user, qualities: transformData(user.qualities) });
+        if (!professionsLoading && !qualitiesLoading && currentUser && !data) {
+            setData({
+                ...currentUser,
+                qualities: transformData(user.qualities)
+            });
         }
-    }, [isProfessionsLoading, isQualitiesLoading]);
+    }, [professionsLoading, qualitiesLoading, currentUser, data]);
 
     useEffect(() => {
-        if (data._id) setIsLoading(false);
+        if (data && isLoading) {
+            setIsLoading(false);
+        }
     }, [data]);
 
     const validatorConfog = {
@@ -131,9 +116,7 @@ const EditUserPage = () => {
             <BackHistoryButton />
             <div className="row">
                 <div className="col-md-6 offset-md-3 shadow p-4">
-                    {!isLoading &&
-                    !isProfessionsLoading &&
-                    !isQualitiesLoading ? (
+                    {!isLoading && !professionsLoading && !qualitiesLoading ? (
                         <form onSubmit={handleSubmit}>
                             <TextField
                                 label="Имя"
@@ -173,7 +156,6 @@ const EditUserPage = () => {
                                 defaultValue={data.qualities}
                                 options={qualitiesList}
                                 onChange={handleChange}
-                                values
                                 name="qualities"
                                 label="Выберите ваши качесвта"
                             />

@@ -18,8 +18,8 @@ const userService = {
         );
         return data;
     },
-    editUser: async (payload) => {
-        const { data } = await httpService.patch(userEndpoint + payload._id, payload);
+    update: async (payload) => {
+        const { data } = await httpService.patch(userEndpoint + localStorageService.getUserId(), payload);
         return data;
     }
 };
